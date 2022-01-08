@@ -96,7 +96,5 @@ a.legend.location = 'top_left'
 
 # In[22]:
 
-
-curdoc().clear()
 curdoc().add_root(row(a))
 
