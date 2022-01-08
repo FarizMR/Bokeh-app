@@ -77,24 +77,36 @@ df_total["Tahun"] = df_total["Tahun"].astype(int)
 df_total
 
 
-# In[16]:
+# In[29]:
+
+
+source = ColumnDataSource(data={
+    'Tahun'                : df_total['Tahun'],
+    'Jumlah Imigran'       : df_total['Jumlah Imigran'],
+})
+
+
+# In[30]:
 
 
 a = figure(title='Jumlah Imigran Asal Indonesia yang Masuk ke Kanada Pada Tahun 1970-2013', x_axis_label='Fertility (children per woman)', y_axis_label='Life Expectancy (years)',
            plot_height=400, plot_width=700)
 
 
-# In[17]:
+# In[31]:
 
 
 a.line(x='Tahun', y='Jumlah Imigran', 
         color='red', legend_label='APPL Volume',
-        source=df_total)
+        source=source)
 
 a.legend.location = 'top_left'
 
 
-# In[22]:
+# In[32]:
 
-curdoc().add_root(row(a))
+
+# show(a)
+# curdoc().clear()
+curdoc().add_root(column(a))
 
