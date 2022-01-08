@@ -10,7 +10,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Bokeh libraries
-from bokeh.io import output_file, output_notebook
+from bokeh.io import output_file, output_notebook, curdoc
 from bokeh.plotting import figure, show
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import row, column, gridplot
@@ -57,8 +57,8 @@ cds_appl = ColumnDataSource(df_stock)
 
 #Melakukan pembuatan figur dengan X-axis = Date dan Y-axis = Volume
 fig = figure(x_axis_type='datetime',
-                  plot_height=700,
-                  plot_width= 1800,
+                  plot_height=600,
+                  plot_width= 950,
                   x_axis_label='Date',
                   y_axis_label='Volume',
                   title='Volume')
@@ -97,12 +97,11 @@ fig.add_tools(HoverTool(tooltips=tooltips, formatters={'@Date': 'datetime'}, ren
 # In[10]:
 
 
-show(fig)
+curdoc().add_root(column(fig))
 
 
 # In[11]:
 
 
-layout = row(plot)
-curdoc().add_root(layout)
+show(fig)
 
