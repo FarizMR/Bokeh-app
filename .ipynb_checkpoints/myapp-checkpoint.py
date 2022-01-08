@@ -11,40 +11,57 @@ from bokeh.models.widgets import Tabs, Panel
 from bokeh.plotting import figure
 
 #Read Data CSV
-df_stock = pd.read_csv("./data/Volume.csv")
-print(df_stock.head())
+df_can = pd.read_csv('immigrant.csv')
 
-#Liat tipe data dari kolom Volume
-df_stock['Date'] = pd.to_datetime(df_stock.Date)
-print(df_stock.info())
+# clean up the dataset to remove unnecessary columns (eg. REG) 
+df_can.drop(['AREA', 'REG', 'DEV', 'Type', 'Coverage'], axis=1, inplace=True)
 
-#Inisialisasi ke dataframe yang khusus menampung kolom volume
-df_appl = df_stock['Volume']
+# let's rename the columns so that they make sense
+df_can.rename(columns={'OdName':'Country', 'AreaName':'Continent','RegName':'Region'}, inplace=True)
 
-#Inisialisasi kedalam bentuk CDS agar dapat ditampilkan di figure
-cds_appl = ColumnDataSource(df_stock)
+# for sake of consistency, let's also make all column labels of type string
+df_can.columns = list(map(str, df_can.columns))
 
+# set the country name as index - useful for quickly looking up countries using .loc method
+df_can.set_index('Country', inplace=True)
+
+# add total column
+df_can['Total'] = df_can.sum(axis=1)
+
+# years that we will be using in this lesson - useful for plotting later on
+years = list(map(str, range(1980, 2014)))
+print('data dimensions:', df_can.shape)
+
+df_countries = df_can.loc[['Indonesia'],years].transpose()
+df_ind = pd.DataFrame(df_countries.sum(axis=1))
+df_ind.reset_index(inplace=True)
+df_ind.columns = ["Tahun", "Jumlah_Imigran"]
+df_ind["Tahun"] = df_ind["Tahun"].astype(int)
+
+source = ColumnDataSource(data={
+    'Tahun'                : df_ind['Tahun'],
+    'Jumlah_Imigran'       : df_ind['Jumlah_Imigran'],
+})
 #Melakukan pembuatan figur dengan X-axis = Date dan Y-axis = Volume
-fig = figure(x_axis_type='datetime',
-                  plot_height=700,
-                  plot_width= 1800,
-                  x_axis_label='Date',
-                  y_axis_label='Volume',
-                  title='Volume')
+a = figure(title='Jumlah Imigran Asal Indonesia Yang Menetap di Kanada (1980-2013)',
+                  plot_height=400,
+                  plot_width= 700,
+                  x_axis_label='Tahun',
+                  y_axis_label='Jumlah Imigran')
 
 #Menentukan warna, dan source dari garis figur
-fig.line(x='Date', y='Volume', 
-        color='red', legend_label='APPL Volume',
-        source=df_stock)
+a.line(x='Tahun', y='Jumlah_Imigran', 
+        color='blue', legend_label='Jumlah Imigran',
+        source=source)
 
-fig.legend.location = 'top_left'
+a.legend.location = 'top_left'
 
-hov_appl = fig.circle(x='Date', y='Volume', source=cds_appl ,size=15, alpha=0, hover_fill_color='blue', hover_alpha=0.5)
+hov_appl = a.circle(x='Tahun', y='Jumlah_Imigran', source=source ,size=15, alpha=0, hover_fill_color='blue', hover_alpha=0.5)
 
 tooltips = [
-            ('Date', '@Date{%F}'),
-            ('Volume', '@Volume'),
+            ('Tahun', '@Tahun'),
+            ('Jumlah Imigran', '@Jumlah_Imigran'),
            ]
-fig.add_tools(HoverTool(tooltips=tooltips, formatters={'@Date': 'datetime'}, renderers=[hov_appl]))
+a.add_tools(HoverTool(tooltips=tooltips, renderers=[hov_appl]))
 
-curdoc().add_root(fig)
+curdoc().add_root(a)
